@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"github.com/akavel/rsrc/rsrc"
-	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/archive"
-	"github.com/asticode/go-astitools/os"
+	astiarchive "github.com/asticode/go-astitools/archive"
+	astios "github.com/asticode/go-astitools/os"
 	"github.com/asticode/go-bindata"
+	"github.com/charlieblevins/go-astilectron"
 	"github.com/pkg/errors"
 	"github.com/sam-kamerer/go-plister"
 )
@@ -495,6 +495,7 @@ func (b *Bundler) provisionVendor(oS, arch string) (err error) {
 func (b *Bundler) provisionVendorZip(pathDownload, pathCache, pathVendor string) (err error) {
 	// Download source
 	if _, errStat := os.Stat(pathCache); os.IsNotExist(errStat) {
+		astilog.Debugf("Downloading %s", pathDownload)
 		if err = astilectron.Download(b.ctx, b.Client, pathDownload, pathCache); err != nil {
 			err = errors.Wrapf(err, "downloading %s into %s failed", pathDownload, pathCache)
 			return
@@ -524,6 +525,9 @@ func (b *Bundler) provisionVendorZip(pathDownload, pathCache, pathVendor string)
 
 // provisionVendorAstilectron provisions the astilectron vendor zip file
 func (b *Bundler) provisionVendorAstilectron() (err error) {
+
+	// Currently zipping the local file is the only option supported, downloading
+	// will fail.
 	var p = filepath.Join(b.pathCache, fmt.Sprintf("astilectron-%s.zip", astilectron.VersionAstilectron))
 	if len(b.pathAstilectron) > 0 {
 		// Zip
@@ -538,6 +542,9 @@ func (b *Bundler) provisionVendorAstilectron() (err error) {
 			return b.ctx.Err()
 		}
 	}
+
+	src := astilectron.AstilectronDownloadSrc()
+	astilog.Debugf("Astilectron Download Src:: %s", src)
 	return b.provisionVendorZip(astilectron.AstilectronDownloadSrc(), p, filepath.Join(b.pathVendor, zipNameAstilectron))
 }
 
