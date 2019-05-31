@@ -86,6 +86,9 @@ type Configuration struct {
 
 	// Info.plist property list
 	InfoPlist map[string]interface{} `json:"info_plist"`
+
+	// Info.plist property list
+	InnerInfoPlist map[string]interface{} `json:"inner_info_plist"`
 }
 
 type ConfigurationBind struct {
@@ -121,6 +124,7 @@ type Bundler struct {
 	darwinAgentApp       bool
 	environments         []ConfigurationEnvironment
 	infoPlist            map[string]interface{}
+	innerInfoPlist       map[string]interface{}
 	ldflags              LDFlags
 	pathAstilectron      string
 	pathBindInput        string
@@ -168,6 +172,7 @@ func New(c *Configuration) (b *Bundler, err error) {
 		resourcesAdapters: c.ResourcesAdapters,
 		ldflags:           c.LDFlags,
 		infoPlist:         c.InfoPlist,
+		innerInfoPlist:	   c.InnerInfoPlist,
 	}
 
 	// Ldflags
@@ -630,6 +635,12 @@ func (b *Bundler) finishDarwin(environmentPath, binaryPath string) (err error) {
 		}
 	}
 
+	// Create inner info plist
+	/*_ = b.writeInnerInfoPlist(contentsPath)
+	if err != nil {
+		astilog.Error(err)
+	}*/
+
 	// Move binary
 	astilog.Debugf("Moving %s to %s", binaryPath, macOSBinaryPath)
 	if err = astios.Move(b.ctx, binaryPath, macOSBinaryPath); err != nil {
@@ -720,6 +731,31 @@ func (b *Bundler) finishDarwin(environmentPath, binaryPath string) (err error) {
 		err = errors.Wrapf(err, "adding Info.plist to %s failed", fp)
 		return
 	}
+	return
+}
+
+func (b *Bundler) writeInnerInfoPlist(contentsPath string) (err error) {
+	/*var infoPlist *plister.InfoPlist
+	if b.innerInfoPlist != nil {
+		astilog.Debugf("Detected inner Info.plist values")
+		infoPlist = plister.MapToInfoPlist(b.innerInfoPlist)
+	}
+	_, err = os.Stat(filepath.Join(contentsPath, "MacOS"))
+	if os.IsNotExist(err) {
+		astilog.Debugf("PATH DOES NOT EXIST %s", filepath.Join(contentsPath, "MacOS/vendor"))
+		// path/to/whatever does not exist
+	}
+
+	// Add Info.plist file
+	var fp = filepath.Join(contentsPath, "MacOS/vendor/electron-darwin-amd64/Log Transformer.app/Contents/Info.plist")
+	astilog.Debugf("Adding INNER Info.plist to %s", fp)
+
+	if infoPlist != nil {
+		if err = plister.Generate(fp, infoPlist); err != nil {
+			err = errors.Wrap(err, "generating INNER Info.plist failed")
+		}
+		return
+	}*/
 	return
 }
 
